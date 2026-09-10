@@ -1,17 +1,21 @@
 ---
 name: grok-designer
-description: Use Grok 4.5 as the required external design advisor when a task needs UI critique, UX critique, component-choice review, interaction-flow review, design imagery markdown, art direction, visual hierarchy judgment, design-system fit, color/type/layout suggestions, HTML mockups, SVG icons, handwritten SVG wordmarks, or file-based feedback on existing UI. Trigger on requests like "design a page", "generate design imagery", "give design advice", "optimize this UI", "improve UX", "optimize user flow", "review interaction", "check usability", "reduce friction", "choose the right component", "review this design", "create an icon", "suggest colors", "UI mockup", "visual direction", "lettering", "wordmark", "handwritten logo", or when another agent needs a second opinion on visual or interaction quality.
+description: "委托外部设计顾问评审 UI/UX、交互流程和视觉方向，或生成 HTML、SVG 草稿。仅在用户明确选择 grok-designer 或该设计顾问时使用；不因普通设计、前端或代码评审请求自动调用收费服务。本地编码会话交给 grok Skill。"
 ---
 
 # Grok Designer — UI, UX, and Visual Design Advisor
 
 Use Grok 4.5 as an external advisor for visual design, UI finish, UX task flow, interaction friction, art direction, and lightweight design artifacts.
 
+## API Key 配置入口
+
+需要外部服务凭据时先读[API Key 配置与业务读取](references/api-key-setup.md)：复用已有安全入口；本机缺少 Key 时使用随附固定页面，保存后通过业务包装入口读取。内置能力与纯本地流程不要求配置 Key。
+
 ## Critical rules
 
-- ONLY interact with Grok through the global `grok-designer` CLI. Do not call the API or provider-specific scripts directly.
+- ONLY interact with Grok through the `grok-designer` CLI（PATH 中已有版本或本 Skill 自带脚本）. Do not call the API or provider-specific scripts directly.
 - When this skill is used, call `grok-designer` before giving UI advice, UX advice, design imagery, art direction, critique, visual advice, HTML, or SVG output. Do not write those deliverables from the agent's own judgment.
-- Call `grok-designer` directly in the normal path. If the command is missing, install it silently with the bundled `scripts/install_cli` script, then retry.
+- 已有运行时凭据时直接调用；使用本机页面保存的凭据时，必须按配置说明通过 run 包装本 Skill 自带脚本。 命令不存在时使用当前 Skill 目录的 `scripts/grok-designer` 绝对路径，不自动安装或覆盖全局命令。
 - For visual/UI review of existing files, use `grok-designer ui`.
 - For UX, task-model, component-choice, interaction-flow, friction, or state-behavior review, use `grok-designer ux`.
 - For requests that need both UI and UX review, run `ui` and `ux` independently. You may use the CLI's comma-separated form, such as `grok-designer ui,ux ...`, or run separate commands in parallel.
@@ -24,9 +28,9 @@ Use Grok 4.5 as an external advisor for visual design, UI finish, UX task flow, 
 - Grok is stateless. It does not know the current project, prior conversation, screenshots, local files, design rules, or previous Grok outputs unless they are included in the current command.
 - Do not ask Grok to review code quality, technical debt, CSS lint, engineering consistency, performance, or architecture unless the user explicitly asks. Keep Grok focused on what users can perceive and operate.
 - Do not ask Grok to output code patches or diffs for existing files. Use its design advice, then make the actual edits yourself.
-- After Grok returns UI advice, UX advice, design imagery markdown, visual direction, or an HTML mockup, show the output or a concise summary to the user and wait for confirmation before implementing it in project code, unless the user explicitly asked to implement immediately.
-- Because UX changes often affect state logic, routing, form behavior, data loading, or validation, present a summary of structural/logic changes and wait for confirmation before refactoring component logic unless the user explicitly asked to implement immediately.
-- After `html` or `svg` returns, do not start an extra AI review, visual critique, browser screenshot check, grep/tail completeness check, or refinement loop unless the user explicitly asked for checking or iteration. The CLI performs structural integrity checks before writing generated HTML/SVG. Read enough to know what Grok returned, then present it to the user.
+- After Grok returns UI advice, UX advice, design imagery markdown, visual direction, or an HTML mockup, show the output or a concise summary to the user and wait for confirmation before implementing it in project code, unless the user has already authorized implementation in this conversation.
+- Because UX changes often affect state logic, routing, form behavior, data loading, or validation, present a summary of structural/logic changes and wait for confirmation before refactoring component logic unless the user has already authorized implementation in this conversation.
+- 生成 HTML/SVG 后检查文件存在、结构完整以及用户明确要求是否满足。结构校验不能证明视觉效果；有授权且具备视觉能力时检查实际渲染，否则如实说明未做视觉验收。不自动扩大为多轮收费评审。
 - For ordinary HTML, SVG, or icon requests, run the script ONCE per task. Read the output file and proceed.
 - Pass the user's stated requirements and concrete project context. Do not add the agent's own style labels, layout choices, color choices, metaphor choices, interaction concepts, or evaluation criteria unless the user explicitly said them.
 - Do not pre-design for Grok. For creative generation, state the user goal, source material, output format, and hard constraints only. Do not name visual directions, metaphors, layouts, palettes, typography, materials, animations, or interaction models unless the user explicitly provided them.
@@ -37,11 +41,11 @@ Use Grok 4.5 as an external advisor for visual design, UI finish, UX task flow, 
 
 Use `grok-designer` for every Grok task.
 
-Normal path: call `grok-designer` directly. Do not run install or auth checks before every use.
+以下示例展示业务参数。使用页面凭据时，统一通过 `node "<Skill目录>/scripts/credential-ui/src/profile.ts" run default -- python3 "<Skill目录>/scripts/grok-designer"` 加上这些参数运行；已有运行时凭据时可直接调用，不重复安装。
 
-If the shell reports `command not found`, resolve `/path/to/this-skill` to the directory containing this `SKILL.md`, run `/path/to/this-skill/scripts/install_cli` silently, then retry the original `grok-designer` command. If the installer reports a `path_warning`, use the printed `installed_path` for this turn and tell the user that the CLI directory is not on PATH.
+命令不存在时直接用 `python3 "<Skill绝对目录>/scripts/grok-designer"`；Python 3.11+ 为必需依赖。全局安装仅在用户要求时进行。
 
-If the CLI returns `error=not_authorized`, stop and tell the user Grok Designer is not authorized. Do not read, copy, print, or manage API keys.
+If the CLI returns `error=not_authorized`, stop and tell the user Grok Designer is not authorized. 不要读取、复制或打印 API Key；缺少配置时按本 Skill 的配置说明展示固定页面，由用户亲自保存。
 
 Each command has its own built-in prompt. Choose the right command and pass the user's task plainly; do not add a cross-command prompt framework, design direction, UX solution, or extra output rules unless the user explicitly gave them.
 
@@ -251,20 +255,8 @@ For generated HTML/SVG, treat `output_path` plus `integrity=passed` as the norma
 
 - The global CLI reads `~/.config/grok-designer/config.toml`.
 - Image optimization defaults to WebP when supported by the local CLI environment.
-- Agents should not read, copy, or manage API keys.
+- Agent 只展示固定配置页入口和脱敏状态，不读取或操作用户真实 Key。
 - Do not check authorization in the normal path. Use `grok-designer auth status` only when explicitly debugging authorization.
-
-## When to use
-
-- Need Grok to inspect existing HTML/CSS/TSX and give visual UI advice
-- Need Grok to inspect existing UI and give UX, interaction, task-flow, or state-feedback advice
-- Need a concise visual or UX optimization plan based on one or more local files
-- Need a visual reference or HTML mockup for a UI component or page
-- Need handwritten SVG wordmark, lettering, signature mark, or logo-like text candidates
-- Need SVG icons or simple illustrations
-- Need color palette, typography, or layout suggestions
-- Need design feedback or critique on an existing design
-- Want a quick single-page HTML prototype to show a concept
 
 ## Workflow
 
@@ -281,7 +273,7 @@ For generated HTML/SVG, treat `output_path` plus `integrity=passed` as the norma
 11. If `ui` or `ux` says more context is needed, gather the requested context and rerun the same command once before presenting advice to the user. If the context is unavailable, ask the user for it.
 12. When implementing `ui` or `ux` output, first look for existing project components, selectors, classes, tokens, variables, and layout patterns to reuse. If Grok suggests replacing a broad system or inventing unrelated UI, narrow it to existing patterns before editing.
 13. If Grok drifts into code review when the task is design review, rerun with a scoped goal such as: "只从 UI/UX 角度判断，不要评论代码规范或工程债。"
-14. Present advisory outputs or HTML mockups to the user for confirmation before editing project code, unless the user explicitly asked to implement immediately.
+14. Present advisory outputs or HTML mockups to the user for confirmation before editing project code, unless the user has already authorized implementation in this conversation.
 15. Base the final response on Grok's output. You may summarize, select, or implement useful parts, but do not replace Grok's design judgment with your own generated design direction.
 
 ## Tips
