@@ -1,17 +1,21 @@
 ---
 name: grok-designer
-description: "通过 Grok Designer CLI 委托外部模型评审 UI/UX、交互流程、组件选择和视觉方向，或生成 HTML 草稿及 SVG 资产。用户明确要求 Grok Designer、外部 Grok 设计顾问或委托该工具给出设计建议时使用。不因普通前端、设计、图标或代码评审请求自动调用付费外部服务；本机 Grok CLI 的编码任务交给 grok Skill。"
+description: "委托外部设计顾问评审 UI/UX、交互流程和视觉方向，或生成 HTML、SVG 草稿。仅在用户明确选择 grok-designer 或该设计顾问时使用；不因普通设计、前端或代码评审请求自动调用收费服务。本地编码会话交给 grok Skill。"
 ---
 
 # Grok Designer — UI, UX, and Visual Design Advisor
 
 Use Grok 4.5 as an external advisor for visual design, UI finish, UX task flow, interaction friction, art direction, and lightweight design artifacts.
 
+## API Key 配置入口
+
+需要外部服务凭据时先读[API Key 配置与业务读取](references/api-key-setup.md)：复用已有安全入口；本机缺少 Key 时使用随附固定页面，保存后通过业务包装入口读取。内置能力与纯本地流程不要求配置 Key。
+
 ## Critical rules
 
 - ONLY interact with Grok through the `grok-designer` CLI（PATH 中已有版本或本 Skill 自带脚本）. Do not call the API or provider-specific scripts directly.
 - When this skill is used, call `grok-designer` before giving UI advice, UX advice, design imagery, art direction, critique, visual advice, HTML, or SVG output. Do not write those deliverables from the agent's own judgment.
-- Call `grok-designer` directly in the normal path. 命令不存在时使用当前 Skill 目录的 `scripts/grok-designer` 绝对路径，不自动安装或覆盖全局命令。
+- 已有运行时凭据时直接调用；使用本机页面保存的凭据时，必须按配置说明通过 run 包装本 Skill 自带脚本。 命令不存在时使用当前 Skill 目录的 `scripts/grok-designer` 绝对路径，不自动安装或覆盖全局命令。
 - For visual/UI review of existing files, use `grok-designer ui`.
 - For UX, task-model, component-choice, interaction-flow, friction, or state-behavior review, use `grok-designer ux`.
 - For requests that need both UI and UX review, run `ui` and `ux` independently. You may use the CLI's comma-separated form, such as `grok-designer ui,ux ...`, or run separate commands in parallel.
@@ -37,11 +41,11 @@ Use Grok 4.5 as an external advisor for visual design, UI finish, UX task flow, 
 
 Use `grok-designer` for every Grok task.
 
-Normal path: call `grok-designer` directly. Do not run install or auth checks before every use.
+以下示例展示业务参数。使用页面凭据时，统一通过 `node "<Skill目录>/scripts/credential-ui/src/profile.ts" run default -- python3 "<Skill目录>/scripts/grok-designer"` 加上这些参数运行；已有运行时凭据时可直接调用，不重复安装。
 
 命令不存在时直接用 `python3 "<Skill绝对目录>/scripts/grok-designer"`；Python 3.11+ 为必需依赖。全局安装仅在用户要求时进行。
 
-If the CLI returns `error=not_authorized`, stop and tell the user Grok Designer is not authorized. Do not read, copy, print, or manage API keys.
+If the CLI returns `error=not_authorized`, stop and tell the user Grok Designer is not authorized. 不要读取、复制或打印 API Key；缺少配置时按本 Skill 的配置说明展示固定页面，由用户亲自保存。
 
 Each command has its own built-in prompt. Choose the right command and pass the user's task plainly; do not add a cross-command prompt framework, design direction, UX solution, or extra output rules unless the user explicitly gave them.
 
@@ -251,7 +255,7 @@ For generated HTML/SVG, treat `output_path` plus `integrity=passed` as the norma
 
 - The global CLI reads `~/.config/grok-designer/config.toml`.
 - Image optimization defaults to WebP when supported by the local CLI environment.
-- Agents should not read, copy, or manage API keys.
+- Agent 只展示固定配置页入口和脱敏状态，不读取或操作用户真实 Key。
 - Do not check authorization in the normal path. Use `grok-designer auth status` only when explicitly debugging authorization.
 
 ## Workflow

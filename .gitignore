@@ -8,3 +8,4 @@ __pycache__/
 !.env.example
 config.toml
 api_key
+node_modules/

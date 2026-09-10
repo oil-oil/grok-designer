@@ -1,6 +1,6 @@
 # Grok Designer
 
-Grok Designer is a Grok 4.5 design advisor skill for agents. It helps with UI critique, UX critique, component-choice review, interaction-flow review, design direction, HTML mockups, SVG icons, handwritten wordmarks, and file-based design feedback.
+委托外部设计顾问评审界面与交互，输出改进建议、视觉方向及 HTML、SVG 草稿。
 
 The skill asks Grok 4.5 for design judgment through the bundled `grok-designer` CLI, then lets the main agent decide how to apply the advice in the current workspace.
 
@@ -93,3 +93,9 @@ Python 3.11+；可直接运行 scripts/grok-designer，不必全局安装。优�
 ```text
 用 Grok Designer 给这个界面提供 UI 建议，保留现有品牌。
 ```
+
+## API Key 配置页面
+
+首次使用外部服务时，可以在本机配置页亲自填写 Key；已有配置会复用，密钥存入系统凭据库。只为实际使用的外部服务配置；纯本地处理不需要 Key。页面需要 Node.js 22.18+ 与可用的系统凭据服务，业务运行仍使用原依赖。
+
+安装、状态检查、打开页面和带凭据运行的完整入口见[配置说明](references/api-key-setup.md)。页面保存与业务读取已经接通；不把 Key 发进聊天，也不自动迁移旧文件。

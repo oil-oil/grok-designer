@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "grok-designer",
+  "label": "外部设计顾问 API Key",
+  "credential": "grok-designer/zenmux/default",
+  "ui": {
+    "title": "配置服务",
+    "placeholder": "粘贴该服务的 API Key",
+    "saveLabel": "保存"
+  }
+}

@@ -996,7 +996,7 @@ def run_grok(
         fail(
             "not_authorized",
             "Grok Designer is not authorized.",
-            "Run `grok-designer auth status`. Ask the user to configure authorization outside the agent.",
+            "请按 references/api-key-setup.md 展示本机配置页；保存后通过 run 包装器执行，不要将 Key 发到聊天。",
         )
     try:
         out_path.parent.mkdir(parents=True, exist_ok=True)
