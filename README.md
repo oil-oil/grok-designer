@@ -51,7 +51,7 @@ Do not commit API keys or local config files. The repository ignores common loca
 
 ## CLI
 
-The skill installs a global command:
+可以直接使用 bundled 脚本；只有用户要求全局安装时才安装命令：
 
 ```bash
 grok-designer
@@ -81,3 +81,15 @@ scripts/install_cli
 ```
 
 `SKILL.md` tells agents when and how to use Grok. `scripts/install_cli` installs the CLI into the user's local bin directory. `scripts/grok-designer` is the command agents call.
+
+## 配置、依赖与使用边界
+
+Python 3.11+；可直接运行 scripts/grok-designer，不必全局安装。优先读取可信运行环境中的 ZENMUX_API_KEY，兼容读取已有私有凭据文件；本 CLI 不创建密钥文件，缺失时由用户的可信凭据环境配置。
+
+选定文件和图片会发给配置的模型供应商，可能计费。结构校验不代表视觉正确；用户已有实施授权时不重复要求同一授权。
+
+使用示例：
+
+```text
+用 Grok Designer 给这个界面提供 UI 建议，保留现有品牌。
+```

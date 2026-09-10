@@ -419,6 +419,9 @@ def config_int(config: dict[str, object], key: str) -> int:
 
 def read_api_key(config: dict[str, object]) -> tuple[pathlib.Path, str | None]:
     key_path = resolve_path(config["api_key_file"])
+    environment_key = os.environ.get("ZENMUX_API_KEY", "").strip()
+    if environment_key:
+        return key_path, environment_key
     if not key_path.exists():
         return key_path, None
     key = key_path.read_text().strip()
